@@ -19,8 +19,8 @@ def set_last_email_id(email_id):
 
 def fetch_and_print_email():
     # メールサーバーに接続
-    mail = imaplib.IMAP4_SSL('imap.gmail.com')
-    mail.login('your_email@gmail.com', 'your_password')
+    mail = imaplib.IMAP4_SSL('imap.example.com')
+    mail.login('your_email@example.com', 'your_password')
 
     # 受信トレイを選択
     mail.select('inbox')
@@ -29,7 +29,7 @@ def fetch_and_print_email():
     last_email_id = get_last_email_id()
 
     # 全てのメールを検索
-    result, data = mail.search(None, 'ALL')
+    result, data = mail.search(None, 'UNSEEN')
 
     # メールIDリストを取得
     email_ids = data[0].split()
@@ -38,7 +38,7 @@ def fetch_and_print_email():
     new_email_ids = [email_id for email_id in email_ids if last_email_id is None or email_id > last_email_id]
 
     if not new_email_ids:
-        print("新しいメールはありません。")
+        print("新しい未読メールはありません。")
         return
 
     for email_id in new_email_ids:
@@ -53,15 +53,12 @@ def fetch_and_print_email():
         # プリンターのIPアドレスを指定
         network_printer = Network("192.168.1.100")
 
-        # プリンターに接続
-        p = Escpos(network_printer)
-
         # メール情報を印刷
-        p.text("Subject: {}\n".format(subject))
-        p.text("From: {}\n".format(sender))
+        network_printer.text("Subject: {}\n".format(subject))
+        network_printer.text("From: {}\n".format(sender))
 
         # 紙をカット
-        p.cut()
+        network_printer.cut()
 
         # 最後に処理したメールIDを更新
         set_last_email_id(email_id)
