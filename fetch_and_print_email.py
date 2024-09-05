@@ -2,7 +2,6 @@ import imaplib
 import email
 import os
 from escpos.printer import Network
-from escpos.printer import Escpos
 
 # 最後に処理したメールIDを保存するファイル
 LAST_ID_FILE = 'last_email_id.txt'
