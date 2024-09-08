@@ -220,7 +220,6 @@ def print_image(image):
     p.cut()
 
     p.close()
-    canvas.show()
 
 # メイン処理
 if __name__ == "__main__":
