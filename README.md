@@ -21,3 +21,6 @@ username = "username@example.com"
 password = "YourPassword"
 mail_server = "imap.example.com"
 ```
+
+### 定期実行
+Windowsの場合はタスクスケジューラー，Linuxの場合はcronを利用して定期実行するとメールを受信するたびに印刷できます．
