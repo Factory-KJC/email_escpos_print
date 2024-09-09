@@ -21,17 +21,27 @@ def decode_mime_words(s):
         for fragment, encoding in decoded_fragments
     )
 
-# 処理済みメールIDを取得
-def get_processed_mail_ids():
+# 処理済みメールUIDを取得
+def get_processed_mail_uids():
+    """
+    処理済みのメールUIDをファイルから読み込み、セットにして返す関数。
+    """
     if os.path.exists(PROCESSED_MAILS_FILE):
         with open(PROCESSED_MAILS_FILE, "r") as f:
-            return set(line.strip() for line in f)  # 空白を削除してIDをセットにする
+            return set(line.strip() for line in f if line.strip())  # 空白行を除外
     return set()
 
-# 処理済みメールIDを保存
-def save_processed_mail_id(mail_id):
-    with open(PROCESSED_MAILS_FILE, "a") as f:
-        f.write(f"{mail_id.strip()}\n")  # 空白を削除してIDを保存
+# 処理済みメールUIDを保存
+def save_processed_mail_uid(mail_uid):
+    """
+    処理済みのメールUIDをファイルに保存する関数。
+    すでに存在するUIDは保存しないようにする。
+    """
+    processed_mail_uids = get_processed_mail_uids()
+
+    if mail_uid not in processed_mail_uids:
+        with open(PROCESSED_MAILS_FILE, "a") as f:
+            f.write(f"{mail_uid.strip()}\n")  # UIDを保存
 
 def extract_text_from_html(html_content):
     """ HTMLメールからテキストを抽出する関数 """
@@ -53,26 +63,31 @@ def extract_text_from_html(html_content):
         print(f"HTMLからテキストを抽出する際にエラーが発生しました: {e}")
         return "HTMLメールの内容を抽出できませんでした"
 
-# メールを取得する関数
+# メールを取得する関数（UID対応）
 def fetch_emails(username, password, mail_server, folder="INBOX"):
     mail = imaplib.IMAP4_SSL(mail_server)
     mail.login(username, password)
     mail.select(folder)
 
-    processed_mail_ids = get_processed_mail_ids()
-    status, messages = mail.search(None, 'UNSEEN')
-    mail_ids = messages[0].split()
+    # 処理済みメールUIDを取得
+    processed_mail_uids = get_processed_mail_uids()
 
-    if not mail_ids:
+    # 未読かつ削除されていないメールを取得 (UIDを含む)
+    status, messages = mail.uid('search', None, '(UNSEEN NOT DELETED)')
+    mail_uids = messages[0].split()
+
+    if not mail_uids:
         print("未読のメールはありません")
         return []
 
     emails_to_process = []
 
-    for mail_id in mail_ids:
-        mail_id_str = mail_id.decode('utf-8')
-        if mail_id_str not in processed_mail_ids:
-            status, msg_data = mail.fetch(mail_id, "(BODY.PEEK[])")
+    for mail_uid in mail_uids:
+        mail_uid_str = mail_uid.decode('utf-8')
+
+        # 処理済みUIDにないか確認
+        if mail_uid_str not in processed_mail_uids:
+            status, msg_data = mail.uid('fetch', mail_uid, "(BODY.PEEK[])")
 
             for response_part in msg_data:
                 if isinstance(response_part, tuple):
@@ -119,8 +134,8 @@ def fetch_emails(username, password, mail_server, folder="INBOX"):
                         if len(body) > MAX_TEXT_LENGTH:
                             body = body[:MAX_TEXT_LENGTH] + '... [内容が長すぎます]'
 
-                    # 処理済みとしてIDを保存
-                    save_processed_mail_id(mail_id_str)
+                    # 処理済みとしてUIDを保存
+                    save_processed_mail_uid(mail_uid_str)
                     emails_to_process.append((subject, from_, body))
 
     return emails_to_process
