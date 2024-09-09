@@ -3,6 +3,7 @@ import email
 from email.header import decode_header
 from PIL import Image, ImageDraw, ImageFont
 from escpos.printer import Network
+from escpos.exceptions import EscposConnectionError
 import os
 from html import unescape
 from bs4 import BeautifulSoup
@@ -195,31 +196,37 @@ def text_to_image(text, width=384):
 
 # プリンターに画像を送信する関数
 def print_image(image):
+    try:
+        # EPSONプリンターのネットワーク設定
+        p = Network("thermal.printer.ip.address")
 
-    # EPSONプリンターのネットワーク設定
-    p = Network("thermal.printer.ip.address")
+        # 左マージンを設定
+        p._raw(b'\x1D\x4C\x00\x00')  # 左マージンを0mm(0dot)に設定
 
-    # 印刷可能領域を設定（48mm幅、384ドット）
-    # p._raw(b'\x1D\x57\x70\x01')  # 印刷幅を48mmに設定
+        # 画像を上下反転
+        rotated_image = rotete_image_180(image)
 
-    # 左マージンを設定
-    p._raw(b'\x1D\x4C\x00\x00')  # 左マージンを0mm(0dot)に設定
+        # 画像を左端に寄せるためのキャンバスを作成
+        canvas_width = 640  # 印刷幅（ドット）
+        canvas_height = rotated_image.height
+        canvas = Image.new('1', (canvas_width, canvas_height), 255)  # 白い背景
+        # 48mm幅の画像を左端に配置
+        image_x_offset = 0
+        canvas.paste(rotated_image, (image_x_offset, 0))  # 左上に配置
 
-    # 画像を上下反転
-    rotated_image = rotete_image_180(image)
+        # 画像を送信
+        p.image(canvas)
+        p.cut()
 
-    # 画像を左端に寄せるためのキャンバスを作成
-    canvas_width = 640  # 印刷幅（ドット）
-    canvas_height = rotated_image.height
-    canvas = Image.new('1', (canvas_width, canvas_height), 255)  # 白い背景
-    # 48mm幅の画像を左端に配置
-    image_x_offset = 0
-    canvas.paste(rotated_image, (image_x_offset, 0))  # 左上に配置
-
-    p.image(canvas)
-    p.cut()
-
-    p.close()
+    except EscposConnectionError as e:
+        print(f"プリンターに接続できませんでした: {e}")
+    except Exception as e:
+        print(f"印刷エラーが発生しました: {e}")
+    finally:
+        try:
+            p.close()
+        except Exception as e:
+            print(f"プリンターの接続を閉じる際にエラーが発生しました: {e}")
 
 # メイン処理
 if __name__ == "__main__":
