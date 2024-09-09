@@ -3,7 +3,6 @@ import email
 from email.header import decode_header
 from PIL import Image, ImageDraw, ImageFont
 from escpos.printer import Network
-from escpos.exceptions import EscposConnectionError
 import os
 from html import unescape
 from bs4 import BeautifulSoup
@@ -218,10 +217,8 @@ def print_image(image):
         p.image(canvas)
         p.cut()
 
-    except EscposConnectionError as e:
-        print(f"プリンターに接続できませんでした: {e}")
     except Exception as e:
-        print(f"印刷エラーが発生しました: {e}")
+        print(f"印刷中にエラーが発生しました: {e}")
     finally:
         try:
             p.close()
