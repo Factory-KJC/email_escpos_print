@@ -15,12 +15,29 @@ p = Network("thermal.printer.ip.address")
 ```
 
 ### メールアドレス設定
-メールサーバー，メールアドレス，パスワードを入力してください．
+`account.cfg`にメールサーバー，メールアドレス，パスワードを入力してください．
+
+パスワード等に一部の記号が使われている場合(%，$等)，%%，$$等で対処してください．
+Gmail，iCloud等で，二要素認証を利用している場合には，アプリパスワードを生成して利用してください．
+
+複数のアカウントを利用する場合は以下のように適宜追加してください．
 ```
-# メールのアカウント情報
-username = "username@example.com"
-password = "YourPassword"
-mail_server = "imap.example.com"
+[Account1]
+email = username@example.com
+password = YourPassword
+mail_server = imap.example.com
+
+[Account2]
+email = username2@example.com
+password = YourPassword2
+mail_server = imap.example.com
+
+[Account2]
+email = username3@example.net
+password = YourPassword3
+mail_server = imap.example.net
+
+....
 ```
 
 ### 定期実行
