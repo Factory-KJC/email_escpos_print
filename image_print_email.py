@@ -104,10 +104,11 @@ def fetch_emails(account, username, password, mail_server, folder="INBOX"):
 
     # 未読かつ削除されていないメールを取得 (UIDを含む)
     status, messages = mail.uid('search', None, '(UNSEEN NOT DELETED)')
-    mail_uids = messages[0].split()
-
-    if not mail_uids:
-        print("未読のメールはありません")
+    # ステータスを確認し、メッセージが存在するかチェック
+    if status == 'OK' and messages[0]:
+        mail_uids = messages[0].split()
+    else:
+        print("未読メールがありません、または検索に失敗しました")
         return []
 
     emails_to_process = []
