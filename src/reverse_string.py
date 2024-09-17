@@ -1,6 +1,29 @@
 from escpos.printer import Network
 import socket
 
+class TextReplacer():
+    def __init__(self):
+        # 置き換える文字のマッピングを定義
+        self.replacements = {
+            '\xa0': ' ',  #ノーブレークスペース
+            '‘': "'",  # 左シングルクォート
+            '’': "'",  # 右シングルクォート
+            '“': '"',  # 左ダブルクォート
+            '”': '"',  # 右ダブルクォート
+            '—': '-',  # エムダッシュ
+            '–': '-',  # エンダッシュ
+        }
+
+    def replace_in_list(self, text_list):
+        """
+        リスト内の文字列に対して、指定された置き換えを行うメソッド
+        """
+        # リスト内の各文字列に対して置き換えを行う
+        return [
+            ''.join(self.replacements.get(char, char) for char in text)
+            for text in text_list
+        ]
+
 class ReverseNetworkPrinter(Network):
     def __init__(self, ip):
         # テキストバッファ（文字列のリスト）
@@ -30,7 +53,7 @@ class ReverseNetworkPrinter(Network):
         current_width = 0
         max_width = 384
         for char in text:
-            if len(char.encode('shift_jis')) == 1:
+            if len(char.encode('shift_jis', errors='replace')) == 1:
                 char_width = 12  # 1バイト文字（12ピクセル）
             else:
                 char_width = 24  # 2バイト文字（24ピクセル）
@@ -48,9 +71,12 @@ class ReverseNetworkPrinter(Network):
         if line:
             self.text_buffer.insert(0, line)
 
+
     def encode_buffer_to_shift_jis(self):
+        replacer = TextReplacer()
+        converted_buffer = replacer.replace_in_list(self.text_buffer)
         # バッファに保存されたテキストをShift-JISでエンコード
-        encoded_texts = [line.encode('shift_jis') for line in self.text_buffer]
+        encoded_texts = [line.encode('shift_jis', errors='replace') for line in converted_buffer]
         return encoded_texts
 
     def print_encoded_text(self):
