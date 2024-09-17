@@ -17,7 +17,7 @@ PROCESSED_MAILS_FILE = "../processed_mails.txt"
 # メールの本文の文字数制限
 MAX_TEXT_LENGTH = 300
 # EPSONプリンターのネットワーク設定
-PRINTER_IP_ADDRESS = "192.168.100.11"
+PRINTER_IP_ADDRESS = "thermal.printer.ip.address"
 
 def main():
     config = configparser.ConfigParser()
