@@ -1,4 +1,4 @@
-from .reverse_string import ReverseNetworkPrinter
+from reverse_string import ReverseNetworkPrinter
 import imaplib
 import email
 from email.header import decode_header
@@ -13,13 +13,13 @@ from email.utils import parsedate_to_datetime
 import pytz
 
 # 処理済みメールIDを保存するファイル
-PROCESSED_MAILS_FILE = "../processed_mails.txt"
+PROCESSED_MAILS_FILE = "processed_mails.txt"
 MAX_TEXT_LENGTH = 300
 PRINTER_IP_ADDRESS = "thermal.printer.ip.address"
 
 def main():
     config = configparser.ConfigParser()
-    config.read("../account.cfg")
+    config.read("account.cfg")
 
     p = ReverseNetworkPrinter(PRINTER_IP_ADDRESS)
 
