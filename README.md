@@ -11,7 +11,7 @@ EPSON TM-T90Ⅱのみで動作確認しています．
 サーマルプリンターのipアドレスを入力してください．
 ```
 # EPSONプリンターのネットワーク設定
-p = Network("thermal.printer.ip.address")
+PRINTER_IP_ADDRESS = Network("thermal.printer.ip.address")
 ```
 
 ### メールアドレス設定
