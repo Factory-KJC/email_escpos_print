@@ -33,9 +33,9 @@ password = YourPassword2
 mail_server = imap.example.com
 
 [Account2]
-email = username3@example.net
+email = username3@example.org
 password = YourPassword3
-mail_server = imap.example.net
+mail_server = imap.example.org
 
 ....
 ```
