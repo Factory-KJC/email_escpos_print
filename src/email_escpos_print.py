@@ -14,8 +14,45 @@ import pytz
 
 # 処理済みメールIDを保存するファイル
 PROCESSED_MAILS_FILE = "../processed_mails.txt"
+# メールの本文の文字数制限
 MAX_TEXT_LENGTH = 300
+# EPSONプリンターのネットワーク設定
 PRINTER_IP_ADDRESS = "192.168.100.11"
+
+def main():
+    config = configparser.ConfigParser()
+    config.read("../account.cfg")
+
+    p = ReverseNetworkPrinter(PRINTER_IP_ADDRESS)
+
+    for account in config.sections():
+        username = config[account]["email"]
+        password = config[account]["password"]
+        mail_server = config[account]["mail_server"]
+
+        check_host_reachable(mail_server)  # ホストの解決をチェック
+
+        emails_to_print = fetch_emails(account, username, password, mail_server)
+
+        if emails_to_print:
+            for email_to_print in emails_to_print:
+                # ネストされたリスト/タプルの構造を確認
+                subject, from_, body, received_time_str, email_address = email_to_print
+                email_text = f"To: {email_address}\nReceived at: {received_time_str}\nSubject: {subject}\nFrom: {from_}\n\n{body}"
+
+                p.add_text_to_buffer(email_text)
+
+                print(email_text)
+
+                # すべてのメールのバッファを追加し終えた後に印刷
+                p.print_encoded_text()
+
+                p.text_buffer.clear()
+
+                p.cut()  # ここで一度だけカットを実行する
+        else:
+            print(f"{account}: 未読のメールがありません、またはすべての未読メールは既に印刷済みです。")
+
 
 def decode_mime_words(s):
     decoded_fragments = decode_header(s)
@@ -190,35 +227,4 @@ def fetch_emails(account, username, password, mail_server, folder="INBOX"):
 
 
 if __name__ == "__main__":
-    config = configparser.ConfigParser()
-    config.read("../account.cfg")
-
-    p = ReverseNetworkPrinter(PRINTER_IP_ADDRESS)
-
-    for account in config.sections():
-        username = config[account]["email"]
-        password = config[account]["password"]
-        mail_server = config[account]["mail_server"]
-
-        check_host_reachable(mail_server)  # ホストの解決をチェック
-
-        emails_to_print = fetch_emails(account, username, password, mail_server)
-
-        if emails_to_print:
-            for email_to_print in emails_to_print:
-                # ネストされたリスト/タプルの構造を確認
-                subject, from_, body, received_time_str, email_address = email_to_print
-                email_text = f"To: {email_address}\nReceived at: {received_time_str}\nSubject: {subject}\nFrom: {from_}\n\n{body}"
-
-                p.add_text_to_buffer(email_text)
-
-                print(email_text)
-
-                # すべてのメールのバッファを追加し終えた後に印刷
-                p.print_encoded_text()
-
-                p.text_buffer.clear()
-
-                p.cut()  # ここで一度だけカットを実行する
-        else:
-            print(f"{account}: 未読のメールがありません、またはすべての未読メールは既に印刷済みです。")
+    main()
