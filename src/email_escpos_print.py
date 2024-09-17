@@ -15,7 +15,7 @@ import pytz
 # 処理済みメールIDを保存するファイル
 PROCESSED_MAILS_FILE = "../processed_mails.txt"
 MAX_TEXT_LENGTH = 300
-PRINTER_IP_ADDRESS = "192.168.100.11"
+PRINTER_IP_ADDRESS = "thermal.printer.ip.address"
 
 def main():
     config = configparser.ConfigParser()
