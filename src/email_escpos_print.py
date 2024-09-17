@@ -1,4 +1,4 @@
-from email_escpos_print.src.reverse_string import ReverseNetworkPrinter
+from .reverse_string import ReverseNetworkPrinter
 import imaplib
 import email
 from email.header import decode_header
